@@ -162,6 +162,24 @@ class TextWindow(QWidget):
 
         ## OTHER ACTIONS GO HERE ##
 
+        if action == 'Literal Minimized SOP':
+            tre = self.parse_input(self.function_text)
+            minimized_sop = self.minimized_SOP(tre)
+
+            self.prompt.setText(f'Your MINIMIZED SOP is: {minimized_sop}')
+
+            self.clear_buttons()
+            self.button_row.deleteLater()
+            self.button_row = QHBoxLayout()
+            self.actions = ['Restart', 'Do nothing']
+            for action in self.actions: 
+                button = QPushButton(action)
+                button.clicked.connect(
+                                lambda _checked=False, l=action: self.action_buttons(l)
+                            )
+                self.button_row.addWidget(button)
+            self.layout.addLayout(self.button_row)
+
         if action == 'Prime Implicants': 
             tre = self.parse_input(self.function_text)
             prime_Implicants, variables = self.prime_implicants(tre)
@@ -180,6 +198,36 @@ class TextWindow(QWidget):
                 primes.append(term)
 
             self.prompt.setText(f'Your PRIME IMPLICANTS are: {primes}')
+
+            self.clear_buttons()
+            self.button_row.deleteLater()
+            self.button_row = QHBoxLayout()
+            self.actions = ['Restart', 'Do nothing']
+            for action in self.actions: 
+                button = QPushButton(action)
+                button.clicked.connect(
+                                lambda _checked=False, l=action: self.action_buttons(l)
+                            )
+                self.button_row.addWidget(button)
+            self.layout.addLayout(self.button_row)
+
+        if action == 'Essential Prime Implicants':
+            tre = self.parse_input(self.function_text)
+            essential_implicants, variables = self.essential_prime_implicants(tre)
+            essentials = []
+            for essential in essential_implicants: 
+                term = ''
+                for bit, var in zip(essential, variables):
+                    if bit == '1':
+                        term += var 
+                    elif bit == '0':
+                        term += var + "'"
+                if not term: 
+                    term = '1'
+
+                essentials.append(term)
+
+            self.prompt.setText(f'Your ESSENTIAL PRIME IMPLICANTS are: {essentials}')
 
             self.clear_buttons()
             self.button_row.deleteLater()
@@ -378,6 +426,38 @@ class TextWindow(QWidget):
 
         ## OTHER FUNCTIONS GO HERE ##
 
+    def minimized_SOP(self, node): 
+        literals = sorted(self.get_variables(node))
+        num = len(literals) 
+        
+        minterms = []
+
+        for combination in itertools.product(range(2), repeat = num):
+            truths = dict(zip(literals, combination)) 
+            value = self.compute(node, truths)
+
+            if value == True:
+                minterms.append(combination)
+        ## Claude For the line below, makes tuples into a string of binary
+        minterm_strings = [''.join(str(b) for b in t) for t in minterms]
+        prime = getPrimeImplicants(minterm_strings)
+        essential, chart = getEssentialPrimeImplicants(prime, minterm_strings) 
+        minimized = petrickMethod(prime, minterm_strings, chart)
+
+        terms = []
+        for pi in minimized:
+            term = ''
+            for bit, var in zip(pi, literals):
+                if bit == '1':
+                    term += var
+                elif bit == '0':
+                    term += var + "'"
+            terms.append(term or '1')
+
+        return ' + '.join(terms) if terms else '0'
+
+       
+
     def prime_implicants(self, node): 
         literals = sorted(self.get_variables(node))
         num = len(literals) 
@@ -395,6 +475,25 @@ class TextWindow(QWidget):
         prime = getPrimeImplicants(minterm_strings)
 
         return prime, literals 
+
+    def essential_prime_implicants(self, node): 
+        literals = sorted(self.get_variables(node))
+        num = len(literals) 
+        
+        minterms = []
+
+        for combination in itertools.product(range(2), repeat = num):
+            truths = dict(zip(literals, combination)) 
+            value = self.compute(node, truths)
+
+            if value == True:
+                minterms.append(combination)
+        ## Claude For the line below, makes tuples into a string of binary
+        minterm_strings = [''.join(str(b) for b in t) for t in minterms]
+        prime = getPrimeImplicants(minterm_strings)
+        essential, _ = getEssentialPrimeImplicants(prime, minterm_strings)
+
+        return essential, literals
 
     def on_set(self, node):
         literals = sorted(self.get_variables(node))
@@ -561,7 +660,7 @@ class tree():
     def add_child(self, child):
         self.children.append(child)
 
-def getPrimeImplicants(minterms):  # psuedo code on wikipedia 
+def getPrimeImplicants(minterms):  # psuedo code on wikipedia for Quine-McCluskey algorithm
     primeImplicants = []
     num_min = len(minterms)
     merges = [False] * num_min
@@ -613,7 +712,105 @@ def checkMintermDifference(minterm1, minterm2):
     result = m1 ^ m2
 
     return result != 0 and (result & (result - 1)) == 0 
- 
+
+def createPrimeImplicantChart(primeImplicants, minterms): 
+    primeImplicantChart = {}
+    for i in range(len(primeImplicants)): 
+        primeImplicantChart.update({primeImplicants[i]: ''})
+
+    primeImplicantKeys = list(primeImplicantChart.keys())
+    for i in range(len(primeImplicantKeys)): 
+        primeImplicant = primeImplicantKeys[i]
+        regularExpression = convertToRegularExpression(primeImplicant)
+        for j in range(len(minterms)): 
+            if re.fullmatch(regularExpression, minterms[j]): 
+                primeImplicantChart[primeImplicant] += "1"
+            else: 
+                primeImplicantChart[primeImplicant] += "0"
+    return primeImplicantChart
+
+def convertToRegularExpression(primeImplicant): 
+    regularExpression = '' 
+    for i in range(len(primeImplicant)): 
+        if primeImplicant[i] == '-': 
+            regularExpression += r'[01]'
+        else: 
+            regularExpression += primeImplicant[i]
+
+    return regularExpression
+
+def getEssentialPrimeImplicants(primeImplicants, minterms): 
+    essentialPrimeImplicants = []
+    chart = createPrimeImplicantChart(primeImplicants, minterms)
+    primeKeys = list(chart.keys())
+    #Below is pseudocode adapted by Claude
+    for j in range(len(minterms)):
+
+        covers = []
+
+        for i in range(len(primeKeys)):
+            if chart[primeKeys[i]][j] == '1':
+                covers.append(primeKeys[i])
+
+        if len(covers) == 1:
+            if covers[0] not in essentialPrimeImplicants:
+                essentialPrimeImplicants.append(covers[0])
+
+    return essentialPrimeImplicants, chart
+
+#Petrick's method found via the Quine wikipedia page. Needed to get other implicants to cover all minterms
+
+def petrickMethod(primeImplicants, minterms, chart): 
+    essentials, chart = getEssentialPrimeImplicants(primeImplicants, minterms)
+
+    uncoveredColumns = []
+    for i in range(len(minterms)): 
+        covered = False 
+        for primeImplicant in essentials: 
+            if chart[primeImplicant][i] == '1':
+                covered = True
+        if not covered: 
+            uncoveredColumns.append(i)
+
+    if not uncoveredColumns: 
+        return essentials
+
+    notEssentials = list(set(primeImplicants).difference(essentials))
+    clauses = []
+    for i in uncoveredColumns: 
+        clause = set()
+        for pi in notEssentials: 
+            if chart[pi][i] == '1':
+                clause.add(pi)
+
+        if not clause: 
+            raise ValueError('minterm j cannot be covered')
+
+        clauses.append(clause)
+
+    products = [frozenset()]
+    for clause in clauses: 
+        newProducts = []
+        for product in products: 
+            for pi in clause: 
+                newProducts.append(product | {pi})
+        products = absorb(newProducts)
+    best = min(products, key=cost)
+    return essentials + list(best)
+
+def literalCount(primeImplicant):
+    return sum(1 for ch in primeImplicant if ch != '-')
+
+def cost(product):
+    return (len(product), sum(literalCount(p) for p in product))
+
+def absorb(products):
+    kept = []
+    for p in products: 
+        if not any(k <= p for k in kept): 
+            kept.append(p)
+    return kept
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
