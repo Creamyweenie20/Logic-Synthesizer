@@ -180,6 +180,24 @@ class TextWindow(QWidget):
                 self.button_row.addWidget(button)
             self.layout.addLayout(self.button_row)
 
+        if action == "Literal Minimized POS":
+            tre = self.parse_input(self.function_text)
+            minimized_pos = self.minimized_POS(tre)
+
+            self.prompt.setText(f'Your MINIMIZED POS is: {minimized_pos}')
+
+            self.clear_buttons()
+            self.button_row.deleteLater()
+            self.button_row = QHBoxLayout()
+            self.actions = ['Restart', 'Do nothing']
+            for action in self.actions: 
+                button = QPushButton(action)
+                button.clicked.connect(
+                                lambda _checked=False, l=action: self.action_buttons(l)
+                            )
+                self.button_row.addWidget(button)
+            self.layout.addLayout(self.button_row)
+
         if action == 'Prime Implicants': 
             tre = self.parse_input(self.function_text)
             prime_Implicants, variables = self.prime_implicants(tre)
@@ -442,7 +460,7 @@ class TextWindow(QWidget):
         minterm_strings = [''.join(str(b) for b in t) for t in minterms]
         prime = getPrimeImplicants(minterm_strings)
         essential, chart = getEssentialPrimeImplicants(prime, minterm_strings) 
-        minimized = petrickMethod(prime, minterm_strings, chart)
+        minimized = petrickMethod(prime, minterm_strings)
 
         terms = []
         for pi in minimized:
@@ -456,7 +474,35 @@ class TextWindow(QWidget):
 
         return ' + '.join(terms) if terms else '0'
 
-       
+    def minimized_POS(self, node):
+        literals = sorted(self.get_variables(node))
+        num = len(literals)
+
+        maxterm_strings = []
+        for combination in itertools.product(range(2), repeat=num):
+            truths = dict(zip(literals, combination))
+            if not self.compute(node, truths):
+                maxterm_strings.append(''.join(str(b) for b in combination))
+
+        if not maxterm_strings:          
+            return '1'
+
+        prime = getPrimeImplicants(maxterm_strings)
+        minimized = petrickMethod(prime, maxterm_strings)   
+
+        sums = []
+        for pi in minimized:
+            sum_terms = []
+            for bit, var in zip(pi, literals):
+                if bit == '1':
+                    sum_terms.append(var + "'")   
+                elif bit == '0':
+                    sum_terms.append(var)
+            if not sum_terms:            
+                return '0'
+            sums.append('(' + ' + '.join(sum_terms) + ')')
+
+        return ''.join(sums)
 
     def prime_implicants(self, node): 
         literals = sorted(self.get_variables(node))
@@ -760,7 +806,7 @@ def getEssentialPrimeImplicants(primeImplicants, minterms):
 
 #Petrick's method found via the Quine wikipedia page. Needed to get other implicants to cover all minterms
 
-def petrickMethod(primeImplicants, minterms, chart): 
+def petrickMethod(primeImplicants, minterms): 
     essentials, chart = getEssentialPrimeImplicants(primeImplicants, minterms)
 
     uncoveredColumns = []
@@ -810,6 +856,27 @@ def absorb(products):
         if not any(k <= p for k in kept): 
             kept.append(p)
     return kept
+
+# def pos_petrick(primeImplicants, maxterms, literals): 
+#     # Need to get chart and maxterms and prime implicants by feeding into the functions with maxterms 
+#     minimized_POS_inversed = petrickMethod(primeImplicants, maxterms)
+#     minimized_POS = DeMorgan_toPOS(minimized_POS_inversed, literals) 
+
+#     return minimized_POS
+
+# def DeMorgan_toPOS(cover, literals): 
+#     sums = []
+#     for implicant in cover: 
+#         sum_terms = []
+#         for bit, var in zip(implicant,literals): 
+#             if bit == '1':
+#                 sum_terms.append(var + "'")
+#             elif bit == '0':
+#                 sum_terms.append(var)
+#         if not sum_terms:    
+#             return '0'
+#         sums.append("(" + '+'.join(sum_terms) + ")")
+#     return ''.join(sums)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
