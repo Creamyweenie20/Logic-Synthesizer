@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QGridLayout
 )
 from PySide6.QtGui import QGuiApplication
+import numpy as np
 
 import itertools
 import re
@@ -280,6 +281,24 @@ class TextWindow(QWidget):
             tre = self.parse_input(self.function_text)
             maxterms, num_maxterms = self.off_set(tre)
             self.prompt.setText(f"The OFF-SET CONSISTS OF: \n {maxterms} \n Hence there are {num_maxterms} off-set maxterms")
+
+            self.clear_buttons()
+            self.button_row.deleteLater()
+            self.button_row = QHBoxLayout()
+            self.actions = ['Restart', 'Do nothing']
+            for action in self.actions: 
+                button = QPushButton(action)
+                button.clicked.connect(
+                                lambda _checked=False, l=action: self.action_buttons(l)
+                            )
+                self.button_row.addWidget(button)
+            self.layout.addLayout(self.button_row)
+
+        if action == "cus1":
+            tre = self.parse_input(self.function_text)
+            truth_table = self.truth_table(tre)
+
+            self.prompt.setText(f'Your TRUTH TABLE is: \n \n {truth_table} \n \n Saved to foo.csv')
 
             self.clear_buttons()
             self.button_row.deleteLater()
@@ -570,9 +589,37 @@ class TextWindow(QWidget):
                 maxterms.append(int(''.join(map(str,combination)), 2))
 
         return maxterms, len(maxterms)
-                            
 
-        
+    def truth_table(self, node):
+        literals = sorted(self.get_variables(node))
+        num = len(literals)
+        truth_csv = np.array(literals)
+        truth_csv = np.append(truth_csv, 'output')
+        truth_table = '|'
+
+        for i in literals: 
+            truth_table += f' {i} |' 
+        truth_table += ' out |'
+        width = len(truth_table)
+        truth_table += '\n' + '-' * (width + 6)
+        truth_table += '\n' 
+
+        for combination in itertools.product(range(2), repeat = num):
+            truth_table += "|"
+            for c in combination: 
+                truth_table += f' {c} |'
+            truths = dict(zip(literals, combination))
+            value = self.compute(node, truths)
+            row = np.append(combination, value)
+            truth_csv = np.vstack([truth_csv, row])
+            truth_table +=  f"   {int(value)}   |"
+            truth_table += '\n' 
+            truth_table += '-' * (width + 6) + "\n"
+
+        np.savetxt("foo.csv", truth_csv, delimiter=',', fmt='%s')
+
+        return truth_table
+
 
         
 class FileWindow(QWidget): 
