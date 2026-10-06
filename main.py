@@ -18,6 +18,7 @@ import numpy as np
 
 import itertools
 import re
+import json
 
 import os
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -299,6 +300,29 @@ class TextWindow(QWidget):
             truth_table = self.truth_table(tre)
 
             self.prompt.setText(f'Your TRUTH TABLE is: \n \n {truth_table} \n \n Saved to foo.csv')
+
+            self.clear_buttons()
+            self.button_row.deleteLater()
+            self.button_row = QHBoxLayout()
+            self.actions = ['Restart', 'Do nothing']
+            for action in self.actions: 
+                button = QPushButton(action)
+                button.clicked.connect(
+                                lambda _checked=False, l=action: self.action_buttons(l)
+                            )
+                self.button_row.addWidget(button)
+            self.layout.addLayout(self.button_row)
+
+        if action == 'cus2':
+            ## Code for exporting JSON tree file ## 
+            tre = self.parse_input(self.function_text)
+            minimized_sop = self.minimized_SOP(tre)
+
+            processed = self.parse_input(minimized_sop)
+            with open('footree.csv', "w") as f:
+                json.dump(processed.to_dict(), f, indent=2)
+
+            self.prompt.setText(f"Your data has been processed into a json tree file \n \n Saved to footree.csv")
 
             self.clear_buttons()
             self.button_row.deleteLater()
@@ -752,6 +776,13 @@ class tree():
 
     def add_child(self, child):
         self.children.append(child)
+
+    def to_dict(self):
+        return {
+            "Type": self.node_type,
+            "Literal": self.value,  
+            "children": [child.to_dict() for child in self.children]
+        }
 
 def getPrimeImplicants(minterms):  # psuedo code on wikipedia for Quine-McCluskey algorithm
     primeImplicants = []
