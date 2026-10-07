@@ -1,6 +1,7 @@
 import sys
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
+    QFileDialog,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -406,7 +407,6 @@ class TextWindow(QWidget):
         return '*'.join(can_pos_terms)
 
 
-        ## OTHER FUNCTIONS GO HERE ##
 
     def minimized_SOP(self, node): 
         literals = sorted(self.get_variables(node))
@@ -565,41 +565,59 @@ class TextWindow(QWidget):
 
         return truth_table
 
-class FileWindow(TextWindow): 
-    def __init__(self): 
-        super().__init__()
-        self.setStyleSheet("""
-                QWidget {
-                    background-color: #222222;
-                    color: #ffffff;
-                }
-        """)
-        self.prompt = QLabel("""   Valid inputs are: \n """ + "="*80 + """ \n Sum of Product Form \n""" + "="*80 + """ \nClose window to go back""")
-        self.prompt.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
-        self.text_box = QLineEdit()
-        (width,height) = QGuiApplication.primaryScreen().size().toTuple()
-        self.resize(width, height)
-        self.text_box.setPlaceholderText("""Type the path to the file you want to open (relative to where this script is)""")
-        self.layout = QVBoxLayout()
-        self.layout.addWidget(self.prompt)
-        self.layout.addWidget(self.text_box)
-        self.setLayout(self.layout)
-
-        self.text_box.returnPressed.connect(self.find_file)
-
-    def find_file(self):
-        path = self.text_box.text()
-        with open(f'{path}', 'r', encoding='utf-8') as r: 
-            self.prompt.setText(f'Your function is: \n {r.read()}')
+class FileWindow(TextWindow):
+    def __init__(self):
+        super().__init__()   
+        self.text_box.returnPressed.disconnect(self.show_input)
         self.layout.removeWidget(self.text_box)
         self.text_box.deleteLater()
+        self.text_box = None
+        self.show_browse_button()
+
+    def show_browse_button(self):
+        self.browse_button = QPushButton("Find file")
+        self.browse_button.clicked.connect(self.find_file)
+        self.layout.addWidget(self.browse_button)
+
+    def find_file(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select a file containing your Boolean function",
+            os.getcwd(),
+            "Text files (*.txt)",
+        )
+        if not path:         
+            return
+
+        try:
+            with open(path, 'r', encoding='utf-8') as r:
+                text = r.read().strip()
+        except OSError as e:
+            self.prompt.setText(f"Could not open file:\n{e}")
+            return
+
+        self.function_text = text      
+        self.prompt.setText(f'Your function is: \n {text}')
+
+        self.layout.removeWidget(self.browse_button)
+        self.browse_button.deleteLater()
+
         self.button_row = QHBoxLayout()
         self.actions = ['Restart', 'Logic Synthesis', 'Do nothing']
-        for action in self.actions: 
+        for action in self.actions:
             button = QPushButton(action)
             button.clicked.connect(
-                            lambda _checked=False, l=action: self.action_buttons(l)
-                        )
+                lambda _checked=False, l=action: self.action_buttons(l)
+            )
             self.button_row.addWidget(button)
         self.layout.addLayout(self.button_row)
+
+    def action_buttons(self, action):
+        if action == 'Restart':
+            self.clear_buttons()
+            self.button_row.deleteLater()
+            self.prompt.setText("""   Valid inputs are: \n """ + "="*80 + """ \n Sum of Product Form \n""" + "="*80 + """ \nClose window to go back""")
+            self.show_browse_button()
+        else:
+            super().action_buttons(action)
 
