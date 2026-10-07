@@ -10,3 +10,6 @@ Canonical SOP, Canonical POS, Inverse Canonical SOP, Inverse Canonical POS, Prim
 
 ## Future Steps
 We will finish the engine's features (Minimized SOP/POS, essential primes, exporting truth table, and visualizing the minimized boolean function as a graph). Streamline the engine for better user-interface. We will also work on increasing the amount of ways we can input a Boolean function and the forms/representations these inputs could take. 
+
+## Updates: 
+All of the above descriptions are defunct as of 10/7/2026. I have finished the functionality, all I need to do is fix organization and such. This commit has done that slightly and will need to work on it more. 

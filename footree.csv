@@ -5,29 +5,7 @@
     {
       "Type": "AND",
       "Literal": null,
-      "children": [
-        {
-          "Type": "Literal",
-          "Literal": "c'",
-          "children": []
-        }
-      ]
-    },
-    {
-      "Type": "AND",
-      "Literal": null,
-      "children": [
-        {
-          "Type": "Literal",
-          "Literal": "a",
-          "children": []
-        },
-        {
-          "Type": "Literal",
-          "Literal": "b",
-          "children": []
-        }
-      ]
+      "children": []
     }
   ]
 }
