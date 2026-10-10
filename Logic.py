@@ -297,6 +297,6 @@ def truth_table(node):
         truth_table += '\n' 
         truth_table += '-' * (width + 6) + "\n"
 
-    np.savetxt("foo.json", truth_csv, delimiter=',', fmt='%s')
+    np.savetxt("foo.csv", truth_csv, delimiter=',', fmt='%s')
 
     return truth_table
