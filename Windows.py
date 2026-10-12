@@ -22,6 +22,8 @@ import itertools
 import re
 import json
 
+from Verilog import VerilogGen
+
 import os
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -118,7 +120,7 @@ class TextWindow(QWidget):
         self.text_box.deleteLater()
 
         self.button_row = QHBoxLayout()
-        self.actions = ['Restart', 'Logic Synthesis', 'Do nothing']
+        self.actions = ['Restart', 'Logic Synthesis', 'Verilog']
         for action in self.actions: 
             button = QPushButton(action)
             button.clicked.connect(
@@ -161,14 +163,33 @@ class TextWindow(QWidget):
             except ValueError as e: 
                 self.prompt.setText(f"{e}")
             self.layout.addLayout(self.button_row)
-        elif action == 'Do Nothing':
-            pass 
+        elif action == 'Verilog':
+            try:
+                tre = parse_input(self.function_text)
+                minimized = minimized_SOP(tre)
+                self.prompt.setText(f"The minimized SOP is used to generate a Verilog file \n {minimized}")
+                tre = parse_input(minimized)
+                path, _ = QFileDialog.getSaveFileName(
+                    self,
+                    "Save Verilog File",
+                    "top.v",
+                    "Verilog Files (*.v);;All Files (*)"
+                )
+
+                if not path:
+                    return  
+
+                gen = VerilogGen()
+                gen.write(tre, path, module_name="top")
+
+            except Exception as e:
+                self.prompt.setText(f"Verilog synthesis failed:\n{e}") 
 
     def clear_button_row_actions(self):
         self.clear_buttons()
         self.button_row.deleteLater()
         self.button_row = QHBoxLayout()
-        self.actions = ['Restart', 'Do nothing']
+        self.actions = ['Restart']
         for action in self.actions: 
             button = QPushButton(action)
             button.clicked.connect(
@@ -331,7 +352,7 @@ class FileWindow(TextWindow):
         self.browse_button.deleteLater()
 
         self.button_row = QHBoxLayout()
-        self.actions = ['Restart', 'Logic Synthesis', 'Do nothing']
+        self.actions = ['Restart', 'Logic Synthesis', 'Verilog']
         for action in self.actions:
             button = QPushButton(action)
             button.clicked.connect(
