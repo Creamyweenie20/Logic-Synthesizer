@@ -1,13 +1,14 @@
-module top (a, b, c, d, w6);
- input a, b, c, d;
- output w6;
- wire a_n, c_n, w2, w3, w4, w5;
+module top (a, b, c, d, e, f, g, out);
+ input a, b, c, d, e, f, g;
+ output out;
+ wire w0, w1, d_n, w3, w4, w5, w6;
 
- not g0 (a_n, a);
- not g1 (c_n, c);
- and g2 (w2, a_n, c_n);
- and g3 (w3, b);
- and g4 (w4, a, c);
- and g5 (w5, c_n, d);
- or g6 (w6, w2, w3, w4, w5);
+ and g0 (w0, f, g);
+ and g1 (w1, e, f);
+ not g2 (d_n, d);
+ and g3 (w3, b, c, d_n);
+ and g4 (w4, a, c, d);
+ and g5 (w5, a, b);
+ or g6 (w6, w0, w1, w3, w4, w5);
+ buf g7 (out, w6);
 endmodule

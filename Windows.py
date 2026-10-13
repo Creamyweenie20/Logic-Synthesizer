@@ -181,6 +181,8 @@ class TextWindow(QWidget):
 
                 gen = VerilogGen()
                 gen.write(tre, path, module_name="top")
+                path = path.replace(".v", "_wrapper.v")
+                gen.write_wrapper(path, module = "top", wrapper = "wrapper")
 
             except Exception as e:
                 self.prompt.setText(f"Verilog synthesis failed:\n{e}") 

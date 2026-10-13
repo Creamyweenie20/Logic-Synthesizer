@@ -52,14 +52,13 @@ class VerilogGen:
 
     def write(self, root, path, module_name="top"):
         result = self.helper(root)
-        if result in self.wires: 
-            self.wires.remove(result)
+        self.gates.append(f'buf g{self.n} (out, {result});')
         inputs = sorted(self.inputs)
 
-        lines = [f'module {module_name} ({', '.join(inputs + [result])});']
+        lines = [f'module {module_name} ({', '.join(inputs + ['out'])});']
         if inputs: 
             lines.append(f" input {', '.join(inputs)};")
-        lines.append(f" output {result};")
+        lines.append(" output out;")
         if self.wires:
             lines.append(f" wire {', '.join(self.wires)};")
         lines.append("")
@@ -67,7 +66,19 @@ class VerilogGen:
         lines.append("endmodule")
         with open(path, "w") as f:
             f.write("\n".join(lines) + "\n")
-        return result 
+        return "out"
+
+    def write_wrapper(self, path, module = "top", wrapper = "wrapper"):
+        inputs = sorted(self.inputs)
+        lines = [f'module {wrapper} (input [15:0] sw, output [15:0] leds);']
+        instance = [f'.{name}(sw[{i}])' for i, name in enumerate(inputs)]
+        instance.append(".out(leds[0])")
+        lines.append("")
+        lines.append(f" {module} inst1 ({", ".join(instance)});")
+        lines.append(" assign leds[15:1] = 15'b0;")
+        lines.append('endmodule')
+        with open(path, "w") as f: 
+            f.write("\n".join(lines) + "\n")
             
         
 

@@ -1,1 +1,1 @@
-ab + c' + cd +bc
+ab + abc' + acd +bcd' + ef + fg
