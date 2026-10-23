@@ -1,3 +1,7 @@
+"""
+Logic processing functions to return minimized forms. Look into pseudo code and algorithm descriptions online to understand the code
+"""
+
 import re
 
 def getPrimeImplicants(minterms):  # psuedo code on wikipedia for Quine-McCluskey algorithm
@@ -83,7 +87,7 @@ def getEssentialPrimeImplicants(primeImplicants, minterms):
     essentialPrimeImplicants = []
     chart = createPrimeImplicantChart(primeImplicants, minterms)
     primeKeys = list(chart.keys())
-    #Below is pseudocode adapted by Claude
+    #Below is adaptation of pseudocode provided from Claude
     for j in range(len(minterms)):
 
         covers = []

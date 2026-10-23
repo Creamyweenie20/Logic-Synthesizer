@@ -18,8 +18,24 @@ The FLSE generates a valid structural Verilog.v file by instatiating gates and w
 In this repository, there are two additional files not needed to run FLSE. These files were used for testing and has some form of the word test in the file name. The external outputs from all of the features include foo.csv, footree.json, top_wrapper.v, and top.v which are the truth table CSV, the tree representation, the wrapper function for the verilog, and the verilog module. The last two files are the test.txt which acts as a demonstration file for the file input functionality and the constraint file for the FPGA deployment. 
 
 ## Dependencies 
-The FLSE needs the following dependencies to run: 
-Pyside
+The FLSE needs the following dependencies to run (in Python 3.12 or later): 
+Pyside6
+Numpy
+
+Install them with pip:
+
+```bash
+pip install PySide6 numpy
+```
+
+Then run the program with:
+
+```bash
+python main.py
+``` 
+
+## Limitations 
+FLSE, as of Beta 0.1, only accepts up to 16 inputs and has only 1 output.
 
 ## Future Directions: 
 As mentioned previously, this is only the first beta release of FLSE. Along with increasing the input forms, FLSE will have more logic processing features in the future, such as tree repsentation visualization among other things. 

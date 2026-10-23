@@ -1,3 +1,7 @@
+"""
+Code for verilog Syntehsis 
+"""
+
 from tree import tree
 from Logic import *
 
@@ -11,10 +15,15 @@ class VerilogGen:
         self.inputs = set()
 
     def helper(self, node):
+        """
+        Helper function to return literals and organize ors and ands
+        """
+
         if node.node_type == 'Literal':
             if node.value.endswith("'"):
                 base = node.value[:-1]
                 self.inputs.add(base)
+                # If we already calculated the inverse, use that instead
                 if base in self.inverters:
                     return self.inverters[base]
                 out = base + '_n'
@@ -30,6 +39,7 @@ class VerilogGen:
 
         else:
             inputs = []
+            # Put every child of a node into the inputs array to use later
             for child in node.children:
                 wires = self.helper(child)
                 inputs.append(wires)
@@ -51,11 +61,14 @@ class VerilogGen:
                 return out
 
     def write(self, root, path, module_name="top"):
+        """
+        Function that writes a string for making the verilog file
+        """
         result = self.helper(root)
         self.gates.append(f'buf g{self.n} (out, {result});')
         inputs = sorted(self.inputs)
 
-        lines = [f'module {module_name} ({', '.join(inputs + ['out'])});']
+        lines = [f'module {module_name} ({", ".join(inputs + ['out'])});']
         if inputs: 
             lines.append(f" input {', '.join(inputs)};")
         lines.append(" output out;")
@@ -69,6 +82,9 @@ class VerilogGen:
         return "out"
 
     def write_wrapper(self, path, module = "top", wrapper = "wrapper"):
+        """
+        Writes a wrapper compatible with our constraints file. Needs to be the top module in verilog
+        """
         inputs = sorted(self.inputs)
         lines = [f'module {wrapper} (input [15:0] sw, output [15:0] leds);']
         instance = [f'.{name}(sw[{i}])' for i, name in enumerate(inputs)]
