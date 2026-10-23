@@ -366,7 +366,7 @@ class TextWindow(QWidget):
             processed = parse_input(minimized_sop)
             with open('footree.json', "w") as f:
                 json.dump(processed.to_dict(), f, indent=2)
-            self.prompt.setText(f"Your data has been processed into a json tree file \n \n Saved to footree.csv")
+            self.prompt.setText(f"Your data has been processed into a json tree file \n \n Saved to footree.json")
             self.clear_button_row_actions()
 
     def clear_buttons(self):
