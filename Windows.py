@@ -397,14 +397,19 @@ class FileWindow(TextWindow):
             self,
             "Select a file containing your Boolean function",
             os.getcwd(),
-            "Text files (*.txt)",
+            "Text files (*.txt *.json)",
         )
         if not path:         
             return
 
         try:
-            with open(path, 'r', encoding='utf-8') as r:
-                text = r.read().strip()
+            if path.lower().endswith(".json"):
+                with open(path, 'r', encoding='utf-8') as r: 
+                    data = json.load(r)
+                text = tree.from_json(data).to_sop()
+            else:
+                with open(path, 'r', encoding='utf-8') as r:
+                    text = r.read().strip()
         except OSError as e:
             self.prompt.setText(f"Could not open file:\n{e}")
             return
