@@ -1,0 +1,4 @@
+numpy
+
+[gui]
+PySide6>=6.5

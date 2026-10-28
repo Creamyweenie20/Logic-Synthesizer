@@ -8,70 +8,7 @@
       "children": [
         {
           "Type": "Literal",
-          "Literal": "f",
-          "children": []
-        },
-        {
-          "Type": "Literal",
-          "Literal": "g",
-          "children": []
-        }
-      ]
-    },
-    {
-      "Type": "AND",
-      "Literal": null,
-      "children": [
-        {
-          "Type": "Literal",
-          "Literal": "e",
-          "children": []
-        },
-        {
-          "Type": "Literal",
-          "Literal": "f",
-          "children": []
-        }
-      ]
-    },
-    {
-      "Type": "AND",
-      "Literal": null,
-      "children": [
-        {
-          "Type": "Literal",
-          "Literal": "b",
-          "children": []
-        },
-        {
-          "Type": "Literal",
-          "Literal": "c",
-          "children": []
-        },
-        {
-          "Type": "Literal",
-          "Literal": "d'",
-          "children": []
-        }
-      ]
-    },
-    {
-      "Type": "AND",
-      "Literal": null,
-      "children": [
-        {
-          "Type": "Literal",
-          "Literal": "a",
-          "children": []
-        },
-        {
-          "Type": "Literal",
-          "Literal": "c",
-          "children": []
-        },
-        {
-          "Type": "Literal",
-          "Literal": "d",
+          "Literal": "c'",
           "children": []
         }
       ]

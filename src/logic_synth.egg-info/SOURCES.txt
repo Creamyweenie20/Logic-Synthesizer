@@ -1,0 +1,15 @@
+README.md
+pyproject.toml
+src/logic_synth/__init__.py
+src/logic_synth/__main__.py
+src/logic_synth/functions.py
+src/logic_synth/gui.py
+src/logic_synth/logic.py
+src/logic_synth/tree.py
+src/logic_synth/verilog.py
+src/logic_synth.egg-info/PKG-INFO
+src/logic_synth.egg-info/SOURCES.txt
+src/logic_synth.egg-info/dependency_links.txt
+src/logic_synth.egg-info/entry_points.txt
+src/logic_synth.egg-info/requires.txt
+src/logic_synth.egg-info/top_level.txt
