@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
             padding: 5px; 
             border-radius: 5px;
         }
-""")
+    """)
         self.setWindowTitle("Logic Synthesizer")
 
         # Set GUI to cover whole window
@@ -55,6 +55,7 @@ class MainWindow(QMainWindow):
  
         self.prompt = QLabel("Select an option to input your boolean logic")
         self.prompt.setAlignment(Qt.AlignCenter)
+        self.prompt.setStyleSheet("font-size: 24pt")
  
         self.actions = {
             "Find Text File": 1,
@@ -111,6 +112,7 @@ class TextWindow(QWidget):
         """)
         self.prompt = QLabel("""   Valid inputs are: \n """ + "="*80 + """ \n Sum of Product Form \n""" + "="*80 + """ \n Close window to go back""")
         self.prompt.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+        self.prompt.setStyleSheet("font-size: 16pt")
         self.text_box = QLineEdit()
         (width,height) = QGuiApplication.primaryScreen().size().toTuple()
         self.resize(width, height)
